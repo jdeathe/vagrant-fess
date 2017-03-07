@@ -1,0 +1,127 @@
+#cloud-config
+
+---
+timezone: "UTC"
+users:
+  - name: "centos"
+    lock_passwd: true
+    gecos: "Cloud User"
+    groups: [ wheel, adm, systemd-journal ]
+    sudo: "ALL=(ALL) NOPASSWD:ALL"
+    ssh-authorized-keys:
+      - "ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEA6NF8iallvQVp22WDkTkyrtvp9eWW6A8YVr+kz4TjGYe7gHzIw+niNltGEFHzD8+v1I2YJ6oXevct1YeS0o9HZyN1Q9qgCgzUFtdOKLv6IedplqoPkcmF0aYet2PkEDo3MlTBckFXPITAMzF8dJSIFo9D8HfdOV0IAdx4O7PtixWKn5y2hMNG0zQPyUecp4pzC6kivAIhyfHilFR61RGL+GPXQ2MWZWFYbAGjyiYJnAmCP3NOTd0jMZEnDkbUvxhMmBYSdETk1rRgm+R4LOzFUGaHqHDLKLX+FIPKcF96hrucXzcWyLbIbEgE98OHlnVYCzRdK8jlqm8tehUc9c9WhQ== vagrant insecure public key"
+    shell: "/bin/bash"
+write_files:
+  - path: "/etc/yum.repos.d/elasticsearch.repo"
+    permissions: "0644"
+    owner: "root"
+    content: |
+      [elasticsearch-5.x]
+      name=Elasticsearch repository for 5.x packages
+      baseurl=https://artifacts.elastic.co/packages/5.x/yum
+      gpgcheck=1
+      gpgkey=https://artifacts.elastic.co/GPG-KEY-elasticsearch
+      enabled=1
+      autorefresh=1
+      type=rpm-md
+  - path: "/etc/haproxy/haproxy.cfg"
+    permissions: "0644"
+    owner: "root"
+    content: |
+      global
+      	user haproxy
+      	group haproxy
+      	log 127.0.0.1 local2
+      	chroot /var/lib/haproxy
+      	stats socket /var/lib/haproxy/stats mode 0600 level admin
+      	maxconn 17000
+      	nbproc 1
+      	spread-checks 4
+      	tune.bufsize 16384
+      	tune.maxaccept 192
+      	tune.maxrewrite 1024
+      	tune.ssl.default-dh-param 2048
+      	tune.ssl.cachesize 320000
+      	tune.ssl.lifetime 300
+      	tune.ssl.maxrecord 1419
+      	tune.zlib.memlevel 9
+      	maxsslrate 144
+      	ssl-default-bind-ciphers ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES256-SHA384:ECDHE-RSA-AES128-SHA:ECDHE-ECDSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA:ECDHE-RSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA:DHE-RSA-AES256-SHA256:DHE-RSA-AES256-SHA:ECDHE-ECDSA-DES-CBC3-SHA:ECDHE-RSA-DES-CBC3-SHA:EDH-RSA-DES-CBC3-SHA:AES128-GCM-SHA256:AES256-GCM-SHA384:AES128-SHA256:AES256-SHA256:AES128-SHA:AES256-SHA:DES-CBC3-SHA:!DSS
+      	ssl-default-server-ciphers ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES256-SHA384:ECDHE-RSA-AES128-SHA:ECDHE-ECDSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA:ECDHE-RSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA:DHE-RSA-AES256-SHA256:DHE-RSA-AES256-SHA:ECDHE-ECDSA-DES-CBC3-SHA:ECDHE-RSA-DES-CBC3-SHA:EDH-RSA-DES-CBC3-SHA:AES128-GCM-SHA256:AES256-GCM-SHA384:AES128-SHA256:AES256-SHA256:AES128-SHA:AES256-SHA:DES-CBC3-SHA:!DSS
+
+      defaults
+      	log global
+      	mode http
+      	maxconn 16384
+      	option httplog
+      	option dontlognull
+      	option dontlog-normal
+      	option abortonclose
+      	option http-server-close
+      	option forwardfor except 127.0.0.0/8
+      	option redispatch
+      	retries 2
+      	timeout connect 4s
+      	timeout client 40s
+      	timeout server 40s
+      	timeout queue 120s
+      	timeout http-request 5s
+      	timeout http-keep-alive 15s
+      	timeout check 15s
+      	default-server maxconn 64
+
+      frontend http
+      	bind 0.0.0.0:80 nice 15
+      	default_backend http
+      	maxconn 10240
+      	backlog 10240
+      	rate-limit sessions 2048
+      	acl acl_secure_path path_beg /admin /login /logout /profile
+      	redirect scheme https code 301 if acl_secure_path !{ ssl_fc }
+
+      frontend https
+      	bind 0.0.0.0:443 nice 30 ssl no-sslv3 no-tls-tickets crt /etc/pki/tls/certs/localhost.crt crt /etc/pki/tls/certs/sni/
+      	default_backend https
+      	maxconn 10240
+      	backlog 10240
+      	rate-limit sessions 144
+
+      backend http
+      	option httpchk HEAD / HTTP/1.0\r\nHost:\ localhost.localdomain\r\nConnection:\ close\r\nUser-Agent:\ HAProxy\r\nAccept-Encoding:\ gzip,\ deflate
+      	fullconn 10240
+      	server fess_1 127.0.0.1:8080 port 8080 check
+
+      backend https
+      	option httpchk HEAD / HTTP/1.0\r\nHost:\ localhost.localdomain\r\nConnection:\ close\r\nUser-Agent:\ HAProxy\r\nAccept-Encoding:\ gzip,\ deflate
+      	fullconn 10240
+      	server fess_1 127.0.0.1:8080 port 8080 check
+# bootcmd:
+#   - [ /bin/bash, -c, "rpm -q epel-release &> /dev/null || yum -y install epel-release" ]
+packages:
+  - chrony
+  - elasticsearch-5.2.0
+  - firewalld
+  - haproxy
+  - java-1.8.0-openjdk-headless
+  - yum-plugin-ovl
+runcmd:
+  - [ openssl, req, -x509, -sha256, -nodes, -newkey, "rsa:2048", -days, 365, -subj, "/CN=localhost", -keyout, /etc/pki/tls/certs/localhost.crt, -out, /etc/pki/tls/certs/localhost.crt ]
+  - [ /bin/bash, -c, "openssl dhparam -out /etc/pki/tls/private/dhparams.pem 2048 || true" ]
+  - [ /bin/bash, -c, "cat /tmp/dhparams.pem >> /etc/pki/tls/certs/localhost.crt" ]
+  - [ mkdir, -p, /etc/pki/tls/certs/sni ]
+  - [ ln, -s, /etc/pki/tls/certs/localhost.crt, /etc/pki/tls/certs/sni/localhost.crt ]
+  - [ systemctl, enable, --force, --now, --no-block, haproxy.service ]
+  - [ /bin/bash, -c, "echo 'configsync.config_path: /var/lib/elasticsearch/config' >> /etc/elasticsearch/elasticsearch.yml" ]
+  - [ /usr/share/elasticsearch/bin/elasticsearch-plugin, install, -s, --batch, "org.codelibs:elasticsearch-analysis-fess:5.2.0" ]
+  - [ /usr/share/elasticsearch/bin/elasticsearch-plugin, install, -s, --batch, "org.codelibs:elasticsearch-analysis-ja:5.2.0" ]
+  - [ /usr/share/elasticsearch/bin/elasticsearch-plugin, install, -s, --batch, "org.codelibs:elasticsearch-analysis-synonym:5.2.0" ]
+  - [ /usr/share/elasticsearch/bin/elasticsearch-plugin, install, -s, --batch, "org.codelibs:elasticsearch-configsync:5.2.0" ]
+  - [ /usr/share/elasticsearch/bin/elasticsearch-plugin, install, -s, --batch, "org.codelibs:elasticsearch-dataformat:5.2.0" ]
+  - [ /usr/share/elasticsearch/bin/elasticsearch-plugin, install, -s, --batch, "org.codelibs:elasticsearch-langfield:5.2.0" ]
+  - [ systemctl, enable, --force, --now, --no-block, elasticsearch.service ]
+  - [ yum, -y, install, "https://github.com/codelibs/fess/releases/download/fess-11.0.0/fess-11.0.0.rpm" ]
+  - [ systemctl, enable, --force, --now, --no-block, fess.service ]
+  - [ firewall-cmd, --zone=public, --permanent, "--add-port=80/tcp", "--add-port=443/tcp" ]
+  - [ firewall-cmd, --reload ]
+  - [ timedatectl, set-ntp, false ]
+  - [ timedatectl, set-ntp, true ]
