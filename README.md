@@ -8,8 +8,8 @@ Use this Vagrantfile and CloudInit configuration to install Fess, Elasticsearch 
 
 ### Prerequisites
 
-- [VirtualBox](https://www.virtualbox.org) (5.1.14)
-- [Vagrant](https://www.vagrantup.com) (1.9.1)
+- [VirtualBox](https://www.virtualbox.org) (5.1.16)
+- [Vagrant](https://www.vagrantup.com) (1.9.2)
 
 ### Installation
 
