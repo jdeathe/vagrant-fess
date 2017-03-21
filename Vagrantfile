@@ -4,7 +4,7 @@
 require 'digest/sha1'
 require 'fileutils'
 
-Vagrant.require_version ">= 1.6.0"
+Vagrant.require_version ">= 1.9.2"
 
 $cloud_config_path = File.expand_path(
   "./user-data",
@@ -23,7 +23,7 @@ $cloudinit_uid = $cloud_config_hash[0,12]
 
 # Defaults for config options
 $image_version = "7.3.0"
-$share_home = true
+$share_home = false
 $vm_name = "fess"
 $vm_gui = false
 $vm_memory = 1024
