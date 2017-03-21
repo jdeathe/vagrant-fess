@@ -13,6 +13,8 @@ Use this Vagrantfile and CloudInit configuration to install Fess, Elasticsearch 
 
 ### Installation
 
+Copy `config.rb.example` to `config.rb` and apply any necessary configuration settings. Increasing both `$vm_memory` and `$vm_cpus` is recommended.
+
 ```
 $ vagrant up
 ```
