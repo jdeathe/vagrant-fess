@@ -19,7 +19,7 @@ $share_home = false
 $vm_name = "fess"
 $vm_gui = false
 $vm_memory = 1024
-$vm_cpus = 2
+$vm_cpus = 1
 
 # Share additional folders to the VMs
 # For example,
