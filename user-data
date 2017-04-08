@@ -69,17 +69,12 @@ write_files:
 
       frontend https
       	bind 0.0.0.0:443 nice 30 ssl no-sslv3 no-tls-tickets crt /etc/pki/tls/certs/localhost.crt crt /etc/pki/tls/certs/sni/
-      	default_backend https
+      	default_backend http
       	maxconn 10240
       	backlog 10240
       	rate-limit sessions 144
 
       backend http
-      	option httpchk HEAD / HTTP/1.0\r\nHost:\ localhost.localdomain\r\nConnection:\ close\r\nUser-Agent:\ HAProxy\r\nAccept-Encoding:\ gzip,\ deflate
-      	fullconn 10240
-      	server fess_1 127.0.0.1:8080 port 8080 check
-
-      backend https
       	option httpchk HEAD / HTTP/1.0\r\nHost:\ localhost.localdomain\r\nConnection:\ close\r\nUser-Agent:\ HAProxy\r\nAccept-Encoding:\ gzip,\ deflate
       	fullconn 10240
       	server fess_1 127.0.0.1:8080 port 8080 check
