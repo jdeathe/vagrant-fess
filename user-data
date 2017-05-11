@@ -89,7 +89,7 @@ yum_repos:
     type: "rpm-md"
 packages:
   - chrony
-  - elasticsearch-5.2.2
+  - elasticsearch-5.3.2
   - firewalld
   - haproxy
   - java-1.8.0-openjdk-headless
@@ -102,14 +102,14 @@ runcmd:
   - [ ln, -s, /etc/pki/tls/certs/localhost.crt, /etc/pki/tls/certs/sni/localhost.crt ]
   - [ systemctl, enable, --force, --now, --no-block, haproxy.service ]
   - [ /bin/bash, -c, "echo 'configsync.config_path: /var/lib/elasticsearch/config' >> /etc/elasticsearch/elasticsearch.yml" ]
-  - [ /usr/share/elasticsearch/bin/elasticsearch-plugin, install, -s, --batch, "org.codelibs:elasticsearch-analysis-fess:5.2.1" ]
-  - [ /usr/share/elasticsearch/bin/elasticsearch-plugin, install, -s, --batch, "org.codelibs:elasticsearch-analysis-ja:5.2.1" ]
-  - [ /usr/share/elasticsearch/bin/elasticsearch-plugin, install, -s, --batch, "org.codelibs:elasticsearch-analysis-synonym:5.2.1" ]
-  - [ /usr/share/elasticsearch/bin/elasticsearch-plugin, install, -s, --batch, "org.codelibs:elasticsearch-configsync:5.2.0" ]
-  - [ /usr/share/elasticsearch/bin/elasticsearch-plugin, install, -s, --batch, "org.codelibs:elasticsearch-dataformat:5.2.1" ]
-  - [ /usr/share/elasticsearch/bin/elasticsearch-plugin, install, -s, --batch, "org.codelibs:elasticsearch-langfield:5.2.1" ]
+  - [ /usr/share/elasticsearch/bin/elasticsearch-plugin, install, -s, --batch, "org.codelibs:elasticsearch-analysis-fess:5.3.1" ]
+  - [ /usr/share/elasticsearch/bin/elasticsearch-plugin, install, -s, --batch, "org.codelibs:elasticsearch-analysis-ja:5.3.1" ]
+  - [ /usr/share/elasticsearch/bin/elasticsearch-plugin, install, -s, --batch, "org.codelibs:elasticsearch-analysis-synonym:5.3.1" ]
+  - [ /usr/share/elasticsearch/bin/elasticsearch-plugin, install, -s, --batch, "org.codelibs:elasticsearch-configsync:5.3.1" ]
+  - [ /usr/share/elasticsearch/bin/elasticsearch-plugin, install, -s, --batch, "org.codelibs:elasticsearch-dataformat:5.3.1" ]
+  - [ /usr/share/elasticsearch/bin/elasticsearch-plugin, install, -s, --batch, "org.codelibs:elasticsearch-langfield:5.3.1" ]
   - [ systemctl, enable, --force, --now, --no-block, elasticsearch.service ]
-  - [ yum, -y, install, "https://github.com/codelibs/fess/releases/download/fess-11.0.3/fess-11.0.3.rpm" ]
+  - [ yum, -y, install, "https://github.com/codelibs/fess/releases/download/fess-11.1.0/fess-11.1.0.rpm" ]
   - [ /bin/bash, -c, "echo 'web.api.gsa=true' >> /etc/fess/system.properties" ]
   - [ systemctl, enable, --force, --now, --no-block, fess.service ]
   - [ firewall-cmd, --zone=public, --permanent, "--add-port=80/tcp", "--add-port=443/tcp" ]
