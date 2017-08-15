@@ -112,6 +112,7 @@ runcmd:
   - [ systemctl, enable, --force, --now, --no-block, elasticsearch.service ]
   - [ yum, -y, install, "https://github.com/codelibs/fess/releases/download/fess-11.3.0/fess-11.3.0.rpm" ]
   - [ /bin/bash, -c, "echo 'web.api.gsa=true' >> /etc/fess/system.properties" ]
+  - [ chown, "fess:fess", /etc/fess/system.properties ]
   - [ systemctl, enable, --force, --now, --no-block, fess.service ]
   - [ firewall-cmd, --zone=public, --permanent, "--add-port=80/tcp", "--add-port=443/tcp" ]
   - [ firewall-cmd, --reload ]
