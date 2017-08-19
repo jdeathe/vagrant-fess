@@ -76,6 +76,7 @@ write_files:
 
       backend http
       	option httpchk HEAD / HTTP/1.0\r\nHost:\ localhost.localdomain\r\nConnection:\ close\r\nUser-Agent:\ HAProxy\r\nAccept-Encoding:\ gzip,\ deflate
+      	reqrep ^([^\ :]*\ )/search(.*)? \1/gsa\2
       	fullconn 10240
       	server fess_1 127.0.0.1:8080 port 8080 check
 yum_repos:
