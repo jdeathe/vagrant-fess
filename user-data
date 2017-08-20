@@ -82,6 +82,7 @@ write_files:
       	reqrep ^([^\ :]*\ /gsa.*)(date%3AA%3A[SRL]%3Ad1)(.*)? \1timestamp.asc\3
       	reqrep ^([^\ :]*\ /gsa.*)(date:D:[SRL]:d1)(.*)? \1timestamp.desc\3
       	reqrep ^([^\ :]*\ /gsa.*)(date%3AD%3A[SRL]%3Ad1)(.*)? \1timestamp.desc\3
+      	reqrep ^([^\ :]*\ /gsa.*(?!(?:\?|&)site=))(site=)([^&%|]*)((?:\||%7C)[^&\n]*)?(&.*)? \1fields.label=\3\5
       	fullconn 10240
       	server fess_1 127.0.0.1:8080 port 8080 check
 yum_repos:
