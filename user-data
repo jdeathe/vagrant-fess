@@ -76,7 +76,8 @@ write_files:
 
       backend http
       	option httpchk HEAD / HTTP/1.0\r\nHost:\ localhost.localdomain\r\nConnection:\ close\r\nUser-Agent:\ HAProxy\r\nAccept-Encoding:\ gzip,\ deflate
-      	reqrep ^([^\ :]*\ )/search((?:\/|\?).*)? \1/gsa\2
+      	reqrep ^([^\ :]*\ )/\ (.*)$ \1/admin/\ \2
+      	reqrep ^([^\ :]*\ )/search((?:\?|\/).*)?(.*)?$ \1/gsa\2\3
       	reqrep ^([^\ :]*\ /gsa(?:\/|\?).*)(start=-[0-9]*)(.*)? \1start=0\3
       	reqrep ^([^\ :]*\ /gsa(?:\/|\?).*)(date:A:[SRL]:d1)(.*)? \1timestamp.asc\3
       	reqrep ^([^\ :]*\ /gsa(?:\/|\?).*)(date%3AA%3A[SRL]%3Ad1)(.*)? \1timestamp.asc\3
