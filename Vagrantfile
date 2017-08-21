@@ -6,25 +6,30 @@ require 'fileutils'
 
 Vagrant.require_version ">= 1.9.2"
 
-$cloud_config_path = File.expand_path(
-  "./user-data",
-  File.dirname(__FILE__)
-)
 $config_path = File.expand_path(
   "./config.rb",
   File.dirname(__FILE__)
 )
+$cloud_config_meta_path = File.expand_path(
+  "./cidata/meta-data",
+  File.dirname(__FILE__)
+)
+$cloud_config_user_path = File.expand_path(
+  "./cidata/user-data",
+  File.dirname(__FILE__)
+)
 
 # Create a hash of the user-data file so changes result in a new instance-id
-$cloud_config_hash = Digest::SHA1.file(
-  $cloud_config_path
+$cloud_config_user_hash = Digest::SHA1.file(
+  $cloud_config_user_path
 ).hexdigest
-$cloudinit_uid = $cloud_config_hash[0,12]
+$cloudinit_uid = $cloud_config_user_hash[0,12]
 
 # Defaults for config options
 $image_version = "7.3.0"
+$linked_clone = false
 $share_home = false
-$vm_name = "fess"
+$vm_name = "fess.local"
 $vm_gui = false
 $vm_memory = 1024
 $vm_cpus = 1
@@ -36,13 +41,83 @@ if File.exist?($config_path)
   require $config_path
 end
 
+if %w(up reload).include? ARGV[0]
+  File.open(
+    "#{$cloud_config_meta_path}",
+    "w"
+  ) do |meta|
+    meta.write "# Auto-Generated - DO NOT CHANGE THIS\n"
+    meta.write "hostname: #{$vm_name}\n"
+    meta.write "instance-id: iid-#{$cloudinit_uid}"
+  end
+
+  # Generate the NoCloud ISO
+  system("
+    if command -v hdiutil &> /dev/null; then
+      hdiutil makehybrid \
+        -quiet \
+        -ov \
+        -hfs \
+        -iso \
+        -joliet \
+        -default-volume-name cidata \
+        -o iso/nocloud.iso \
+        cidata/
+    elif command -v mkisofs &> /dev/null; then
+      mkisofs \
+        -R \
+        -J \
+        -V cidata \
+        -o iso/nocloud.iso \
+        cidata/*
+    fi
+  ")
+end
+
+$cloud_config_iso = File.expand_path(
+  "./iso/nocloud.iso",
+  File.dirname(__FILE__)
+)
+
+if !File.exist?($cloud_config_iso)
+  puts "ERROR: Missing NoCloud ISO file: 
+%s" % $cloud_config_iso
+  abort
+end
+
+$hostupdater_message = ""
+if !Vagrant::Util::Platform.windows?
+  unless Vagrant.has_plugin?("vagrant-hostsupdater")
+    $hostupdater_message =" either run 'vagrant plugin install vagrant-hostsupdater && vagrant reload',
+"
+  end
+end
+
 Vagrant.configure(2) do |config|
-  config.vm.box = "jdeathe/centos-7-x86_64-minimal-en_us"
-  config.vm.box_version = "= %s" % $image_version
+  config.vm.box = "jdeathe/centos-7-x86_64-minimal-cloud-init-en_us"
+  config.vm.box_version = "= #{$image_version}"
 
   config.vm.define $vm_name do |config|
     config.vm.hostname = $vm_name
-    config.vm.post_up_message = "Access FESS on: 'http://%s'. Note: Allow some time for initialisation." % $ip_address
+    config.vm.post_up_message = "After the machine booted Cloud-Init applies the changes 
+defined in user-data.
+
+For access%s add a /etc/hosts or DNS entry: '%s %s'.
+
+The service can take a few minutes to start. Run:
+  vagrant ssh -- sudo tail -f /var/log/fess/server_0.log
+
+Proceed once you see a 'Boot successful' info message.
+If it hangs you can try restarting Fess:
+  vagrant ssh -- sudo systemctl restart fess
+
+To complete the installation, visit: 
+  http://%s" % [
+      $hostupdater_message,
+      $ip_address,
+      $vm_name,
+      $vm_name
+    ]
 
     # Configure SSH port forwarding to start at port 2250
     config.vm.network "forwarded_port", 
@@ -83,68 +158,54 @@ Vagrant.configure(2) do |config|
     end
 
     config.vm.provider "virtualbox" do |vb|
-      vb.gui = $vm_gui
-      vb.memory = $vm_memory
       vb.cpus = $vm_cpus
+      vb.gui = $vm_gui
+      vb.linked_clone = $linked_clone
+      vb.memory = $vm_memory
       vb.name = $vm_name
 
       # Remove checks for features not included/required in the base box
       vb.check_guest_additions = false
       vb.functional_vboxsf = false
-    end
 
-    if File.exist?($cloud_config_path)
-      config.vm.provision "file", 
-        source: "#{$cloud_config_path}", 
-        destination: "/tmp/user-data"
-      config.vm.provision "shell", keep_color: true, 
-        name: "Install cloud-init", 
-        inline: "yum -y install cloud-init"
-      config.vm.provision "shell", keep_color: true, 
-        name: "Disabling cloud-init locale module", 
-        inline: "sed -i -e 's~^\\([ ]*\\)\\(- locale\\)$~\\1#\\2~' /etc/cloud/cloud.cfg"
-      config.vm.provision "shell", keep_color: true, 
-        name: "Make cloud-init datastore directory", 
-        inline: "mkdir -p /var/lib/cloud/seed/nocloud-net"
-      config.vm.provision "shell", keep_color: true, 
-        name: "Populate cloud-init meta-data", 
-        inline: "echo -e 'hostname: #{$vm_name}\ninstance-id: #{"iid-%s" % $cloudinit_uid}' > /var/lib/cloud/seed/nocloud-net/meta-data"
-      config.vm.provision "shell", keep_color: true, 
-        name: "Populate cloud-init user-data", 
-        inline: "mv /tmp/user-data /var/lib/cloud/seed/nocloud-net/user-data"
-      config.vm.provision "shell", keep_color: true, 
-        name: "Apply the settings specified in cloud-config", 
-        inline: "systemctl restart cloud-config.service || true"
-      config.vm.provision "shell", keep_color: true, 
-        name: "Execute cloud user/final scripts", 
-        inline: "systemctl restart --no-block cloud-final.service"
-      config.vm.provision "shell", keep_color: true, 
-        name: "Replacing centos user's public key", 
-        inline: "cat /home/vagrant/.ssh/authorized_keys > /home/centos/.ssh/authorized_keys"
-      config.vm.provision "shell", keep_color: true, 
-        name: "Waiting for fess activation", 
-        inline: "sleep 1; while ! systemctl -q is-active fess; do sleep 1; done"
-
-      # Use the cloud-config provisioned user with vagrant ssh
-      if %w(ssh ssh-config).include? ARGV[0]
-        config.ssh.username = "centos"
-        private_key_paths = Array.new
-        if File.exist?(File.expand_path(
-            "./.vagrant/machines/%s/virtualbox/private_key" % $vm_name
-        ))
-          private_key_paths.push(File.expand_path(
-            "./.vagrant/machines/%s/virtualbox/private_key" % $vm_name
-          ))
-        end
-        if File.exist?(File.expand_path(
-          "%s/.vagrant.d/insecure_private_key" % ENV['HOME']
-        ))
-          private_key_paths.push(File.expand_path(
-            "%s/.vagrant.d/insecure_private_key" % ENV['HOME']
-          ))
-        end
-        config.ssh.private_key_path = private_key_paths
+      if File.exist?($cloud_config_iso)
+        vb.customize [
+          "storageattach", :id,
+          "--storagectl", "SATA Controller",
+          "--port", "1",
+          "--type", "dvddrive",
+          "--medium", "#{$cloud_config_iso}"
+        ]
       end
     end
+
+    if File.exist?($cloud_config_iso)
+      config.vm.provision "shell", keep_color: true,
+        name: "Wait for Cloud-init boot-finished",
+        inline: "tail -f /var/log/cloud-init-output.log & \
+          CIO_PID=${!}; \
+          until [[ -e /var/lib/cloud/instance/boot-finished ]]; do \
+            sleep 1; \
+          done; \
+          kill ${CIO_PID}"
+      config.vm.provision "shell", keep_color: true,
+        name: "Cloud-init success verification",
+        inline: "if ! grep -qE \
+            '\\\"errors\\\": \\[\\]' \
+            /var/lib/cloud/data/result.json; \
+          then \
+            printf -- 'ERROR Cloud-init failed\\n' 1>&2
+            exit 1; \
+          fi"
+    end
+  end
+end
+
+if %w(up reload).include? ARGV[0]
+  File.open(
+    "#{$cloud_config_meta_path}",
+    "w"
+  ) do |meta|
+    meta.write "# Auto-Generated - DO NOT CHANGE THIS"
   end
 end
