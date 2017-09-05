@@ -118,7 +118,7 @@ runcmd:
   - [ /usr/share/elasticsearch/bin/elasticsearch-plugin, install, -s, --batch, "org.codelibs:elasticsearch-langfield:5.5.0" ]
   - [ /usr/share/elasticsearch/bin/elasticsearch-plugin, install, -s, --batch, "org.codelibs:elasticsearch-minhash:5.5.0" ]
   - [ systemctl, enable, --force, --now, --no-block, elasticsearch.service ]
-  - [ yum, -y, install, "https://github.com/codelibs/fess/releases/download/fess-11.3.0/fess-11.3.0.rpm" ]
+  - [ yum, -y, install, "https://github.com/codelibs/fess/releases/download/fess-11.3.1/fess-11.3.1.rpm" ]
   - [ /bin/bash, -c, "echo 'web.api.gsa=true' >> /etc/fess/system.properties" ]
   - [ chown, "fess:fess", /etc/fess/system.properties ]
   - [ sed, -i, -e, 's~^\(query.additional.api.response.fields=\).*$~\1UE,U,T,RK,S,LANG~', /etc/fess/fess_config.properties ]
