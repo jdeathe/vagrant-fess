@@ -103,6 +103,7 @@ packages:
   - java-1.8.0-openjdk-headless
   - yum-plugin-ovl
 runcmd:
+  - [ sed, -r, -i, -e, 's~^(makestep )[0-9]+ [0-9]+$~\11 -1~', /etc/chrony.conf ]
   - [ openssl, req, -x509, -sha256, -nodes, -newkey, "rsa:2048", -days, 365, -subj, "/CN=localhost", -keyout, /etc/pki/tls/certs/localhost.crt, -out, /etc/pki/tls/certs/localhost.crt ]
   - [ /bin/bash, -c, "openssl dhparam -out /etc/pki/tls/private/dhparams.pem 2048 > /dev/null 2>&1" ]
   - [ /bin/bash, -c, "cat /etc/pki/tls/private/dhparams.pem >> /etc/pki/tls/certs/localhost.crt" ]
