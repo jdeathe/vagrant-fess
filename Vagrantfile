@@ -182,7 +182,7 @@ To complete the installation, visit:
     if File.exist?($cloud_config_iso)
       config.vm.provision "shell", keep_color: true,
         name: "Wait for Cloud-init boot-finished",
-        inline: "tail -f /var/log/cloud-init-output.log & \
+        inline: "tail -f /var/log/cloud-init.log & \
           CIO_PID=${!}; \
           until [[ -e /var/lib/cloud/instance/boot-finished ]]; do \
             sleep 1; \
