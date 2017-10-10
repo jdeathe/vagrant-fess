@@ -17,30 +17,31 @@ write_files:
     owner: "root"
     content: |
       global
-      	user haproxy
+      	chroot /var/lib/haproxy
       	group haproxy
       	log 127.0.0.1 local2
-      	chroot /var/lib/haproxy
-      	stats socket /var/lib/haproxy/stats mode 0600 level admin
-      	maxconn 17000
+      	maxconn 4096
+      	maxsslrate 144
       	nbproc 1
       	spread-checks 4
+      	ssl-default-bind-ciphers ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES256-SHA384:ECDHE-RSA-AES128-SHA:ECDHE-ECDSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA:ECDHE-RSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA:DHE-RSA-AES256-SHA256:DHE-RSA-AES256-SHA:ECDHE-ECDSA-DES-CBC3-SHA:ECDHE-RSA-DES-CBC3-SHA:EDH-RSA-DES-CBC3-SHA:AES128-GCM-SHA256:AES256-GCM-SHA384:AES128-SHA256:AES256-SHA256:AES128-SHA:AES256-SHA:DES-CBC3-SHA:!DSS
+      	ssl-default-server-ciphers ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES256-SHA384:ECDHE-RSA-AES128-SHA:ECDHE-ECDSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA:ECDHE-RSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA:DHE-RSA-AES256-SHA256:DHE-RSA-AES256-SHA:ECDHE-ECDSA-DES-CBC3-SHA:ECDHE-RSA-DES-CBC3-SHA:EDH-RSA-DES-CBC3-SHA:AES128-GCM-SHA256:AES256-GCM-SHA384:AES128-SHA256:AES256-SHA256:AES128-SHA:AES256-SHA:DES-CBC3-SHA:!DSS
+      	stats socket /var/lib/haproxy/stats mode 0600 level admin
       	tune.bufsize 16384
       	tune.maxaccept 192
       	tune.maxrewrite 1024
-      	tune.ssl.default-dh-param 2048
       	tune.ssl.cachesize 320000
+      	tune.ssl.default-dh-param 2048
       	tune.ssl.lifetime 300
       	tune.ssl.maxrecord 1419
       	tune.zlib.memlevel 9
-      	maxsslrate 144
-      	ssl-default-bind-ciphers ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES256-SHA384:ECDHE-RSA-AES128-SHA:ECDHE-ECDSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA:ECDHE-RSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA:DHE-RSA-AES256-SHA256:DHE-RSA-AES256-SHA:ECDHE-ECDSA-DES-CBC3-SHA:ECDHE-RSA-DES-CBC3-SHA:EDH-RSA-DES-CBC3-SHA:AES128-GCM-SHA256:AES256-GCM-SHA384:AES128-SHA256:AES256-SHA256:AES128-SHA:AES256-SHA:DES-CBC3-SHA:!DSS
-      	ssl-default-server-ciphers ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES256-SHA384:ECDHE-RSA-AES128-SHA:ECDHE-ECDSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA:ECDHE-RSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA:DHE-RSA-AES256-SHA256:DHE-RSA-AES256-SHA:ECDHE-ECDSA-DES-CBC3-SHA:ECDHE-RSA-DES-CBC3-SHA:EDH-RSA-DES-CBC3-SHA:AES128-GCM-SHA256:AES256-GCM-SHA384:AES128-SHA256:AES256-SHA256:AES128-SHA:AES256-SHA:DES-CBC3-SHA:!DSS
+      	user haproxy
 
       defaults
+      	default-server maxconn 128
       	log global
+      	maxconn 2048
       	mode http
-      	maxconn 16384
       	option httplog
       	option dontlognull
       	option dontlog-normal
@@ -49,33 +50,33 @@ write_files:
       	option forwardfor except 127.0.0.0/8
       	option redispatch
       	retries 2
-      	timeout connect 4s
-      	timeout client 40s
-      	timeout server 40s
-      	timeout queue 120s
-      	timeout http-request 5s
-      	timeout http-keep-alive 15s
       	timeout check 15s
-      	default-server maxconn 64
+      	timeout client 40s
+      	timeout connect 4s
+      	timeout http-keep-alive 15s
+      	timeout http-request 5s
+      	timeout queue 120s
+      	timeout server 40s
 
       frontend http
+      	acl acl_secure_path path_beg /admin /login /logout /profile
+      	backlog 1024
       	bind 0.0.0.0:80 nice 15
       	default_backend http
-      	maxconn 10240
-      	backlog 10240
-      	rate-limit sessions 2048
-      	acl acl_secure_path path_beg /admin /login /logout /profile
+      	maxconn 1024
+      	rate-limit sessions 1024
       	redirect scheme https code 301 if acl_secure_path !{ ssl_fc }
 
       frontend https
+      	backlog 1024
       	bind 0.0.0.0:443 nice 30 ssl no-sslv3 no-tls-tickets crt /etc/pki/tls/certs/localhost.crt crt /etc/pki/tls/certs/sni/
       	default_backend http
-      	maxconn 10240
-      	backlog 10240
+      	maxconn 1024
       	rate-limit sessions 144
 
       backend http
-      	option httpchk HEAD / HTTP/1.0\r\nHost:\ localhost.localdomain\r\nConnection:\ close\r\nUser-Agent:\ HAProxy\r\nAccept-Encoding:\ gzip,\ deflate
+      	fullconn 1024
+      	option httpchk HEAD / HTTP/1.1\r\nHost:\ localhost.localdomain\r\nConnection:\ close\r\nUser-Agent:\ HAProxy\r\nAccept-Encoding:\ gzip,\ deflate
       	reqrep ^([^\ :]*\ )/\ (.*)$ \1/admin/\ \2
       	reqrep ^([^\ :]*\ )/search((?:\?|\/).*)?(.*)?$ \1/gsa\2\3
       	reqrep ^([^\ :]*\ /gsa(?:\/|\?).*)(start=-[0-9]*)(.*)? \1start=0\3
@@ -84,7 +85,6 @@ write_files:
       	reqrep ^([^\ :]*\ /gsa(?:\/|\?).*)(date:D:[SRL]:d1)(.*)? \1timestamp.desc\3
       	reqrep ^([^\ :]*\ /gsa(?:\/|\?).*)(date%3AD%3A[SRL]%3Ad1)(.*)? \1timestamp.desc\3
       	reqrep ^([^\ :]*\ /gsa(?:\/\?|\?).*(?!(?:\?|&)site=))(site=)([^&%|]*)((?:\||%7C)[^&\n]*)?(&.*)? \1fields.label=\3\5
-      	fullconn 10240
       	server fess_1 127.0.0.1:8080 port 8080 check
 yum_repos:
   elasticsearch-5.x:
