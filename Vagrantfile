@@ -26,7 +26,7 @@ $cloud_config_user_hash = Digest::SHA1.file(
 $cloudinit_uid = $cloud_config_user_hash[0,12]
 
 # Defaults for config options
-$image_version = "7.4.0"
+$image_version = "7.4.1"
 $linked_clone = false
 $share_home = false
 $vm_name = "fess.local"
@@ -182,7 +182,7 @@ To complete the installation, visit:
     if File.exist?($cloud_config_iso)
       config.vm.provision "shell", keep_color: true,
         name: "Wait for Cloud-init boot-finished",
-        inline: "tail -f /var/log/cloud-init.log & \
+        inline: "tail -f /var/log/cloud-init-output.log & \
           CIO_PID=${!}; \
           until [[ -e /var/lib/cloud/instance/boot-finished ]]; do \
             sleep 1; \
