@@ -194,7 +194,10 @@ To complete the installation, visit:
             '\\\"errors\\\": \\[\\]' \
             /var/lib/cloud/data/result.json; \
           then \
-            printf -- 'ERROR Cloud-init failed\\n' 1>&2
+            printf -- 'ERROR Cloud-init failed\\n%s' \
+            \"$(
+              cat /var/lib/cloud/data/result.json
+            )\" 1>&2; \
             exit 1; \
           fi"
     end
