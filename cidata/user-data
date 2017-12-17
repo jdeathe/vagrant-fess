@@ -69,7 +69,7 @@ write_files:
 
       frontend https
       	backlog 1024
-      	bind 0.0.0.0:443 nice 30 ssl no-sslv3 no-tls-tickets crt /etc/pki/tls/certs/localhost.crt crt /etc/pki/tls/certs/sni/
+      	bind 0.0.0.0:443 nice 30 ssl no-sslv3 no-tls-tickets crt /etc/pki/tls/certs/localhost.localdomain.crt crt /etc/pki/tls/certs/sni/
       	default_backend http
       	maxconn 1024
       	rate-limit sessions 144
@@ -104,11 +104,11 @@ packages:
   - yum-plugin-ovl
 runcmd:
   - [ sed, -r, -i, -e, 's~^(makestep )[0-9\.]+ (-)?[0-9]+$~\11 -1~', /etc/chrony.conf ]
-  - [ openssl, req, -x509, -sha256, -nodes, -newkey, "rsa:2048", -days, 365, -subj, "/CN=localhost", -keyout, /etc/pki/tls/certs/localhost.crt, -out, /etc/pki/tls/certs/localhost.crt ]
+  - [ openssl, req, -x509, -sha256, -nodes, -newkey, "rsa:2048", -days, 365, -subj, "/CN=localhost.localdomain", -keyout, /etc/pki/tls/certs/localhost.localdomain.crt, -out, /etc/pki/tls/certs/localhost.localdomain.crt ]
   - [ /bin/bash, -c, "openssl dhparam -out /etc/pki/tls/private/dhparams.pem 2048 > /dev/null 2>&1" ]
-  - [ /bin/bash, -c, "cat /etc/pki/tls/private/dhparams.pem >> /etc/pki/tls/certs/localhost.crt" ]
+  - [ /bin/bash, -c, "cat /etc/pki/tls/private/dhparams.pem >> /etc/pki/tls/certs/localhost.localdomain.crt" ]
   - [ mkdir, -p, /etc/pki/tls/certs/sni ]
-  - [ ln, -s, /etc/pki/tls/certs/localhost.crt, /etc/pki/tls/certs/sni/localhost.crt ]
+  - [ ln, -s, /etc/pki/tls/certs/localhost.localdomain.crt, /etc/pki/tls/certs/sni/localhost.localdomain.crt ]
   - [ systemctl, enable, --force, --now, --no-block, haproxy.service ]
   - [ /bin/bash, -c, "echo 'configsync.config_path: /var/lib/elasticsearch/config' >> /etc/elasticsearch/elasticsearch.yml" ]
   - [ /usr/share/elasticsearch/bin/elasticsearch-plugin, install, -s, --batch, "org.codelibs:elasticsearch-analysis-fess:5.6.1" ]
