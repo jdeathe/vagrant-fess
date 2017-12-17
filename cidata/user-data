@@ -1,0 +1,132 @@
+#cloud-config
+
+---
+timezone: "UTC"
+users:
+  - name: "centos"
+    lock_passwd: true
+    gecos: "Cloud User"
+    groups: [ wheel, adm, systemd-journal ]
+    sudo: "ALL=(ALL) NOPASSWD:ALL"
+    ssh-authorized-keys:
+      - "ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEA6NF8iallvQVp22WDkTkyrtvp9eWW6A8YVr+kz4TjGYe7gHzIw+niNltGEFHzD8+v1I2YJ6oXevct1YeS0o9HZyN1Q9qgCgzUFtdOKLv6IedplqoPkcmF0aYet2PkEDo3MlTBckFXPITAMzF8dJSIFo9D8HfdOV0IAdx4O7PtixWKn5y2hMNG0zQPyUecp4pzC6kivAIhyfHilFR61RGL+GPXQ2MWZWFYbAGjyiYJnAmCP3NOTd0jMZEnDkbUvxhMmBYSdETk1rRgm+R4LOzFUGaHqHDLKLX+FIPKcF96hrucXzcWyLbIbEgE98OHlnVYCzRdK8jlqm8tehUc9c9WhQ== vagrant insecure public key"
+    shell: "/bin/bash"
+write_files:
+  - path: "/etc/haproxy/haproxy.cfg"
+    permissions: "0644"
+    owner: "root"
+    content: |
+      global
+      	chroot /var/lib/haproxy
+      	group haproxy
+      	log 127.0.0.1 local2
+      	maxconn 4096
+      	maxsslrate 144
+      	nbproc 1
+      	spread-checks 4
+      	ssl-default-bind-ciphers ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES256-SHA384:ECDHE-RSA-AES128-SHA:ECDHE-ECDSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA:ECDHE-RSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA:DHE-RSA-AES256-SHA256:DHE-RSA-AES256-SHA:ECDHE-ECDSA-DES-CBC3-SHA:ECDHE-RSA-DES-CBC3-SHA:EDH-RSA-DES-CBC3-SHA:AES128-GCM-SHA256:AES256-GCM-SHA384:AES128-SHA256:AES256-SHA256:AES128-SHA:AES256-SHA:DES-CBC3-SHA:!DSS
+      	ssl-default-server-ciphers ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES256-SHA384:ECDHE-RSA-AES128-SHA:ECDHE-ECDSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA:ECDHE-RSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA:DHE-RSA-AES256-SHA256:DHE-RSA-AES256-SHA:ECDHE-ECDSA-DES-CBC3-SHA:ECDHE-RSA-DES-CBC3-SHA:EDH-RSA-DES-CBC3-SHA:AES128-GCM-SHA256:AES256-GCM-SHA384:AES128-SHA256:AES256-SHA256:AES128-SHA:AES256-SHA:DES-CBC3-SHA:!DSS
+      	stats socket /var/lib/haproxy/stats mode 0600 level admin
+      	tune.bufsize 16384
+      	tune.maxaccept 192
+      	tune.maxrewrite 1024
+      	tune.ssl.cachesize 320000
+      	tune.ssl.default-dh-param 2048
+      	tune.ssl.lifetime 300
+      	tune.ssl.maxrecord 1419
+      	tune.zlib.memlevel 9
+      	user haproxy
+
+      defaults
+      	default-server maxconn 128
+      	log global
+      	maxconn 2048
+      	mode http
+      	option httplog
+      	option dontlognull
+      	option dontlog-normal
+      	option abortonclose
+      	option http-server-close
+      	option forwardfor except 127.0.0.0/8
+      	option redispatch
+      	retries 2
+      	timeout check 15s
+      	timeout client 40s
+      	timeout connect 4s
+      	timeout http-keep-alive 15s
+      	timeout http-request 5s
+      	timeout queue 120s
+      	timeout server 40s
+
+      frontend http
+      	acl acl_secure_path path_beg /admin /login /logout /profile
+      	backlog 1024
+      	bind 0.0.0.0:80 nice 15
+      	default_backend http
+      	maxconn 1024
+      	rate-limit sessions 1024
+      	redirect scheme https code 301 if acl_secure_path !{ ssl_fc }
+
+      frontend https
+      	backlog 1024
+      	bind 0.0.0.0:443 nice 30 ssl no-sslv3 no-tls-tickets crt /etc/pki/tls/certs/localhost.localdomain.crt crt /etc/pki/tls/certs/sni/
+      	default_backend http
+      	maxconn 1024
+      	rate-limit sessions 144
+
+      backend http
+      	fullconn 1024
+      	option httpchk HEAD / HTTP/1.1\r\nHost:\ localhost.localdomain\r\nConnection:\ close\r\nUser-Agent:\ HAProxy\r\nAccept-Encoding:\ gzip,\ deflate
+      	reqrep ^([^\ :]*\ )/\ (.*)$ \1/admin/\ \2
+      	reqrep ^([^\ :]*\ )/search((?:\?|\/).*)?(.*)?$ \1/gsa\2\3
+      	reqrep ^([^\ :]*\ /gsa(?:\/|\?).*)(start=-[0-9]*)(.*)? \1start=0\3
+      	reqrep ^([^\ :]*\ /gsa(?:\/|\?).*)(date:A:[SRL]:d1)(.*)? \1last_modified.asc\3
+      	reqrep ^([^\ :]*\ /gsa(?:\/|\?).*)(date%3AA%3A[SRL]%3Ad1)(.*)? \1last_modified.asc\3
+      	reqrep ^([^\ :]*\ /gsa(?:\/|\?).*)(date:D:[SRL]:d1)(.*)? \1last_modified.desc\3
+      	reqrep ^([^\ :]*\ /gsa(?:\/|\?).*)(date%3AD%3A[SRL]%3Ad1)(.*)? \1last_modified.desc\3
+      	reqrep ^([^\ :]*\ /gsa(?:\/\?|\?).*(?!(?:\?|&)site=))(site=)([^&%|]*)((?:\||%7C)[^&\n]*)?(&.*)? \1fields.label=\3\5
+      	server fess_1 127.0.0.1:8080 port 8080 check
+yum_repos:
+  elasticsearch-5.x:
+    autorefresh: true
+    name: "Elasticsearch repository for 5.x packages"
+    baseurl: "https://artifacts.elastic.co/packages/5.x/yum"
+    enabled: true
+    gpgcheck: true
+    gpgkey: "https://artifacts.elastic.co/GPG-KEY-elasticsearch"
+    type: "rpm-md"
+packages:
+  - chrony
+  - elasticsearch-5.6.1
+  - firewalld
+  - haproxy
+  - java-1.8.0-openjdk-headless
+  - yum-plugin-ovl
+runcmd:
+  - [ sed, -r, -i, -e, 's~^(makestep )[0-9\.]+ (-)?[0-9]+$~\11 -1~', /etc/chrony.conf ]
+  - [ openssl, req, -x509, -sha256, -nodes, -newkey, "rsa:2048", -days, 365, -subj, "/CN=localhost.localdomain", -keyout, /etc/pki/tls/certs/localhost.localdomain.crt, -out, /etc/pki/tls/certs/localhost.localdomain.crt ]
+  - [ /bin/bash, -c, "openssl dhparam -out /etc/pki/tls/private/dhparams.pem 2048 > /dev/null 2>&1" ]
+  - [ /bin/bash, -c, "cat /etc/pki/tls/private/dhparams.pem >> /etc/pki/tls/certs/localhost.localdomain.crt" ]
+  - [ mkdir, -p, /etc/pki/tls/certs/sni ]
+  - [ ln, -s, /etc/pki/tls/certs/localhost.localdomain.crt, /etc/pki/tls/certs/sni/localhost.localdomain.crt ]
+  - [ systemctl, enable, --force, --now, --no-block, haproxy.service ]
+  - [ /bin/bash, -c, "echo 'configsync.config_path: /var/lib/elasticsearch/config' >> /etc/elasticsearch/elasticsearch.yml" ]
+  - [ /usr/share/elasticsearch/bin/elasticsearch-plugin, install, -s, --batch, "org.codelibs:elasticsearch-analysis-fess:5.6.1" ]
+  - [ /usr/share/elasticsearch/bin/elasticsearch-plugin, install, -s, --batch, "org.codelibs:elasticsearch-analysis-ja:5.6.1" ]
+  - [ /usr/share/elasticsearch/bin/elasticsearch-plugin, install, -s, --batch, "org.codelibs:elasticsearch-analysis-synonym:5.6.1" ]
+  - [ /usr/share/elasticsearch/bin/elasticsearch-plugin, install, -s, --batch, "org.codelibs:elasticsearch-configsync:5.6.1" ]
+  - [ /usr/share/elasticsearch/bin/elasticsearch-plugin, install, -s, --batch, "org.codelibs:elasticsearch-dataformat:5.6.1" ]
+  - [ /usr/share/elasticsearch/bin/elasticsearch-plugin, install, -s, --batch, "org.codelibs:elasticsearch-langfield:5.6.1" ]
+  - [ /usr/share/elasticsearch/bin/elasticsearch-plugin, install, -s, --batch, "org.codelibs:elasticsearch-minhash:5.6.1" ]
+  - [ systemctl, enable, --force, --now, --no-block, elasticsearch.service ]
+  - [ yum, -y, install, "https://github.com/codelibs/fess/releases/download/fess-11.4.2/fess-11.4.2.rpm" ]
+  - [ /bin/bash, -c, "echo 'web.api.gsa=true' >> /etc/fess/system.properties" ]
+  - [ chown, "fess:fess", /etc/fess/system.properties ]
+  - [ sed, -i, -e, 's~^\(query\.additional\.api\.response\.fields=\).*$~\1UE,U,T,RK,S,LANG~', /etc/fess/fess_config.properties ]
+  - [ sed, -i, -e, 's~^\(crawler\.document\.html\.pruned\.tags=.*\),a\[rel="nofollow"\]$~\1,a[rel=nofollow]~', /etc/fess/fess_config.properties ]
+  - [ sed, -i, -e, 's~\(defaultMaxLength">\)[0-9]*\(<\)~\1157286400\2~', -e, 's~-- 10M -->$~-- 150M -->~', /usr/share/fess/app/WEB-INF/classes/crawler/contentlength.xml ]
+  - [ systemctl, enable, --force, --now, --no-block, fess.service ]
+  - [ firewall-cmd, --zone=public, --permanent, "--add-port=80/tcp", "--add-port=443/tcp" ]
+  - [ firewall-cmd, --reload ]
+  - [ timedatectl, set-ntp, false ]
+  - [ timedatectl, set-ntp, true ]
