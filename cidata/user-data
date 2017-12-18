@@ -97,7 +97,7 @@ yum_repos:
     type: "rpm-md"
 packages:
   - chrony
-  - elasticsearch-5.6.2
+  - elasticsearch-5.6.4
   - firewalld
   - haproxy
   - java-1.8.0-openjdk-headless
