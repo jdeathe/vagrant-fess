@@ -4,6 +4,10 @@
 
 Summary of release changes for Version 1.
 
+### 1.1.2 - Unreleased
+
+- Updates README with tested version of VirtualBox
+
 ### 1.1.1 - 2018-01-19
 
 - Fess [12.0.1](https://github.com/codelibs/fess/releases/tag/fess-12.0.1)
