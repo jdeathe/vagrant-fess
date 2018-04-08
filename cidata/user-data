@@ -97,7 +97,7 @@ yum_repos:
     type: "rpm-md"
 packages:
   - chrony
-  - elasticsearch-6.1.1
+  - elasticsearch-6.1.3
   - firewalld
   - haproxy
   - java-1.8.0-openjdk-headless
@@ -119,7 +119,7 @@ runcmd:
   - [ /usr/share/elasticsearch/bin/elasticsearch-plugin, install, -s, --batch, "org.codelibs:elasticsearch-langfield:6.1.0" ]
   - [ /usr/share/elasticsearch/bin/elasticsearch-plugin, install, -s, --batch, "org.codelibs:elasticsearch-minhash:6.1.0" ]
   - [ systemctl, enable, --force, --now, --no-block, elasticsearch.service ]
-  - [ yum, -y, install, "https://github.com/codelibs/fess/releases/download/fess-12.0.1/fess-12.0.1.rpm" ]
+  - [ yum, -y, install, "https://github.com/codelibs/fess/releases/download/fess-12.0.2/fess-12.0.2.rpm" ]
   - [ /bin/bash, -c, "echo 'web.api.gsa=true' >> /etc/fess/system.properties" ]
   - [ chown, "fess:fess", /etc/fess/system.properties ]
   - [ sed, -i, -e, 's~^\(query\.additional\.api\.response\.fields=\).*$~\1UE,U,T,RK,S,LANG~', /etc/fess/fess_config.properties ]

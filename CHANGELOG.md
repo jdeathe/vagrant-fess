@@ -6,7 +6,10 @@ Summary of release changes for Version 1.
 
 ### 1.1.2 - Unreleased
 
-- Updates README with tested version of VirtualBox
+- Fess [12.0.2](https://github.com/codelibs/fess/releases/tag/fess-12.0.2)
+- Elasticsearch 6.1.3
+- Tested on VirtualBox 5.2.8
+- Tested using Vagrant 2.0.3
 
 ### 1.1.1 - 2018-01-19
 
