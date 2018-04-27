@@ -4,7 +4,7 @@
 
 Summary of release changes for Version 1.
 
-### 1.2.2 - Unreleased
+### 1.2.2 - 2018-04-27
 
 - Fess [12.1.2](https://github.com/codelibs/fess/releases/tag/fess-12.1.2)
 - Elasticsearch 6.2.4
