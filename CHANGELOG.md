@@ -4,6 +4,11 @@
 
 Summary of release changes.
 
+### 1.6.0 - 2019-09-06
+
+- Fess [12.5.0](https://github.com/codelibs/fess/releases/tag/fess-12.5.0)
+- Elasticsearch 6.6.0
+
 ### 1.5.0 - 2019-09-06
 
 - Fess [12.4.0](https://github.com/codelibs/fess/releases/tag/fess-12.4.0)

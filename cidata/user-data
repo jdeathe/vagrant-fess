@@ -97,7 +97,7 @@ yum_repos:
     type: "rpm-md"
 packages:
   - chrony
-  - elasticsearch-6.5.0
+  - elasticsearch-6.6.0
   - firewalld
   - haproxy
   - java-1.8.0-openjdk-headless
@@ -111,15 +111,15 @@ runcmd:
   - [ ln, -s, /etc/pki/tls/certs/localhost.localdomain.crt, /etc/pki/tls/certs/sni/localhost.localdomain.crt ]
   - [ systemctl, enable, --force, --now, --no-block, haproxy.service ]
   - [ /bin/bash, -c, "echo 'configsync.config_path: /var/lib/elasticsearch/config' >> /etc/elasticsearch/elasticsearch.yml" ]
-  - [ /usr/share/elasticsearch/bin/elasticsearch-plugin, install, -s, --batch, "org.codelibs:elasticsearch-analysis-fess:6.5.1" ]
-  - [ /usr/share/elasticsearch/bin/elasticsearch-plugin, install, -s, --batch, "org.codelibs:elasticsearch-analysis-extension:6.5.1" ]
-  - [ /usr/share/elasticsearch/bin/elasticsearch-plugin, install, -s, --batch, "org.codelibs:elasticsearch-configsync:6.5.0" ]
-  - [ /usr/share/elasticsearch/bin/elasticsearch-plugin, install, -s, --batch, "org.codelibs:elasticsearch-dataformat:6.5.0" ]
-  - [ /usr/share/elasticsearch/bin/elasticsearch-plugin, install, -s, --batch, "org.codelibs:elasticsearch-langfield:6.5.0" ]
-  - [ /usr/share/elasticsearch/bin/elasticsearch-plugin, install, -s, --batch, "org.codelibs:elasticsearch-minhash:6.5.0" ]
-  - [ /usr/share/elasticsearch/bin/elasticsearch-plugin, install, -s, --batch, "org.codelibs:elasticsearch-learning-to-rank:6.5.0" ]
+  - [ /usr/share/elasticsearch/bin/elasticsearch-plugin, install, -s, --batch, "org.codelibs:elasticsearch-analysis-fess:6.6.0" ]
+  - [ /usr/share/elasticsearch/bin/elasticsearch-plugin, install, -s, --batch, "org.codelibs:elasticsearch-analysis-extension:6.6.0" ]
+  - [ /usr/share/elasticsearch/bin/elasticsearch-plugin, install, -s, --batch, "org.codelibs:elasticsearch-configsync:6.6.0" ]
+  - [ /usr/share/elasticsearch/bin/elasticsearch-plugin, install, -s, --batch, "org.codelibs:elasticsearch-dataformat:6.6.0" ]
+  - [ /usr/share/elasticsearch/bin/elasticsearch-plugin, install, -s, --batch, "org.codelibs:elasticsearch-langfield:6.6.0" ]
+  - [ /usr/share/elasticsearch/bin/elasticsearch-plugin, install, -s, --batch, "org.codelibs:elasticsearch-minhash:6.6.0" ]
+  - [ /usr/share/elasticsearch/bin/elasticsearch-plugin, install, -s, --batch, "org.codelibs:elasticsearch-learning-to-rank:6.6.0" ]
   - [ systemctl, enable, --force, --now, --no-block, elasticsearch.service ]
-  - [ yum, -y, install, "https://github.com/codelibs/fess/releases/download/fess-12.4.0/fess-12.4.0.rpm" ]
+  - [ yum, -y, install, "https://github.com/codelibs/fess/releases/download/fess-12.5.0/fess-12.5.0.rpm" ]
   - [ /bin/bash, -c, "echo 'web.api.gsa=true' >> /etc/fess/system.properties" ]
   - [ chown, "fess:fess", /etc/fess/system.properties ]
   - [ sed, -i, -e, 's~^\(query\.additional\.api\.response\.fields=\).*$~\1UE,U,T,RK,S,LANG~', /etc/fess/fess_config.properties ]
