@@ -20,7 +20,7 @@ write_files:
       	chroot /var/lib/haproxy
       	group haproxy
       	log 127.0.0.1 local2
-      	maxconn 4096
+      	maxconn 1024
       	maxsslrate 144
       	nbproc 1
       	spread-checks 4
@@ -40,7 +40,7 @@ write_files:
       defaults
       	default-server maxconn 128
       	log global
-      	maxconn 2048
+      	maxconn 512
       	mode http
       	option httplog
       	option dontlognull
@@ -50,32 +50,30 @@ write_files:
       	option forwardfor except 127.0.0.0/8
       	option redispatch
       	retries 2
-      	timeout check 15s
-      	timeout client 40s
-      	timeout connect 4s
-      	timeout http-keep-alive 15s
+      	timeout check 5s
+      	timeout client 30s
+      	timeout connect 5s
+      	timeout http-keep-alive 2s
       	timeout http-request 5s
       	timeout queue 120s
-      	timeout server 40s
+      	timeout server 30s
 
       frontend http
       	acl acl_secure_path path_beg /admin /login /logout /profile
-      	backlog 1024
       	bind 0.0.0.0:80 nice 15
       	default_backend http
-      	maxconn 1024
+      	maxconn 512
       	rate-limit sessions 1024
       	redirect scheme https code 301 if acl_secure_path !{ ssl_fc }
 
       frontend https
-      	backlog 1024
-      	bind 0.0.0.0:443 nice 30 ssl no-sslv3 no-tls-tickets crt /etc/pki/tls/certs/localhost.localdomain.crt crt /etc/pki/tls/certs/sni/
+      	bind 0.0.0.0:443 nice 30 ssl no-sslv3 no-tls-tickets crt /etc/pki/tls/certs/localhost.crt crt /etc/pki/tls/certs/sni/
       	default_backend http
-      	maxconn 1024
+      	maxconn 512
       	rate-limit sessions 144
 
       backend http
-      	fullconn 1024
+      	fullconn 500
       	option httpchk HEAD / HTTP/1.1\r\nHost:\ localhost.localdomain\r\nConnection:\ close\r\nUser-Agent:\ HAProxy\r\nAccept-Encoding:\ gzip,\ deflate
       	reqrep ^([^\ :]*\ )/\ (.*)$ \1/admin/\ \2
       	reqrep ^([^\ :]*\ )/search((?:\?|\/).*)?(.*)?$ \1/gsa\2\3
@@ -87,39 +85,37 @@ write_files:
       	reqrep ^([^\ :]*\ /gsa(?:\/\?|\?).*(?!(?:\?|&)site=))(site=)([^&%|]*)((?:\||%7C)[^&\n]*)?(&.*)? \1fields.label=\3\5
       	server fess_1 127.0.0.1:8080 port 8080 check
 yum_repos:
-  elasticsearch-6.x:
+  elasticsearch-7.x:
     autorefresh: true
-    name: "Elasticsearch repository for 6.x packages"
-    baseurl: "https://artifacts.elastic.co/packages/6.x/yum"
+    name: "Elasticsearch repository for 7.x packages"
+    baseurl: "https://artifacts.elastic.co/packages/7.x/yum"
     enabled: true
     gpgcheck: true
     gpgkey: "https://artifacts.elastic.co/GPG-KEY-elasticsearch"
     type: "rpm-md"
 packages:
   - chrony
-  - elasticsearch-6.7.1
+  - elasticsearch-7.0.1
   - firewalld
   - haproxy
-  - java-1.8.0-openjdk-headless
+  - java-11-openjdk-headless
   - yum-plugin-ovl
 runcmd:
   - [ sed, -r, -i, -e, 's~^(makestep )[0-9\.]+ (-)?[0-9]+$~\11 -1~', /etc/chrony.conf ]
-  - [ openssl, req, -x509, -sha256, -nodes, -newkey, "rsa:2048", -days, 365, -subj, "/CN=localhost.localdomain", -keyout, /etc/pki/tls/certs/localhost.localdomain.crt, -out, /etc/pki/tls/certs/localhost.localdomain.crt ]
+  - [ openssl, req, -x509, -sha256, -nodes, -newkey, "rsa:2048", -days, 365, -subj, "/CN=localhost.localdomain", -keyout, /etc/pki/tls/certs/localhost.crt, -out, /etc/pki/tls/certs/localhost.crt ]
   - [ /bin/bash, -c, "openssl dhparam -out /etc/pki/tls/private/dhparams.pem 2048 > /dev/null 2>&1" ]
   - [ /bin/bash, -c, "cat /etc/pki/tls/private/dhparams.pem >> /etc/pki/tls/certs/localhost.localdomain.crt" ]
   - [ mkdir, -p, /etc/pki/tls/certs/sni ]
-  - [ ln, -s, /etc/pki/tls/certs/localhost.localdomain.crt, /etc/pki/tls/certs/sni/localhost.localdomain.crt ]
+  - [ ln, -s, /etc/pki/tls/certs/localhost.crt, /etc/pki/tls/certs/sni/localhost.crt ]
   - [ systemctl, enable, --force, --now, --no-block, haproxy.service ]
   - [ /bin/bash, -c, "echo 'configsync.config_path: /var/lib/elasticsearch/config' >> /etc/elasticsearch/elasticsearch.yml" ]
-  - [ /usr/share/elasticsearch/bin/elasticsearch-plugin, install, -s, --batch, "org.codelibs:elasticsearch-analysis-fess:6.7.0" ]
-  - [ /usr/share/elasticsearch/bin/elasticsearch-plugin, install, -s, --batch, "org.codelibs:elasticsearch-analysis-extension:6.7.0" ]
-  - [ /usr/share/elasticsearch/bin/elasticsearch-plugin, install, -s, --batch, "org.codelibs:elasticsearch-configsync:6.7.0" ]
-  - [ /usr/share/elasticsearch/bin/elasticsearch-plugin, install, -s, --batch, "org.codelibs:elasticsearch-dataformat:6.7.0" ]
-  - [ /usr/share/elasticsearch/bin/elasticsearch-plugin, install, -s, --batch, "org.codelibs:elasticsearch-langfield:6.7.0" ]
-  - [ /usr/share/elasticsearch/bin/elasticsearch-plugin, install, -s, --batch, "org.codelibs:elasticsearch-minhash:6.7.0" ]
-  - [ /usr/share/elasticsearch/bin/elasticsearch-plugin, install, -s, --batch, "org.codelibs:elasticsearch-learning-to-rank:6.7.0" ]
+  - [ /usr/share/elasticsearch/bin/elasticsearch-plugin, install, -s, --batch, "org.codelibs:elasticsearch-analysis-fess:7.0.1" ]
+  - [ /usr/share/elasticsearch/bin/elasticsearch-plugin, install, -s, --batch, "org.codelibs:elasticsearch-analysis-extension:7.0.0" ]
+  - [ /usr/share/elasticsearch/bin/elasticsearch-plugin, install, -s, --batch, "org.codelibs:elasticsearch-configsync:7.0.1" ]
+  - [ /usr/share/elasticsearch/bin/elasticsearch-plugin, install, -s, --batch, "org.codelibs:elasticsearch-dataformat:7.0.0" ]
+  - [ /usr/share/elasticsearch/bin/elasticsearch-plugin, install, -s, --batch, "org.codelibs:elasticsearch-minhash:7.0.0" ]
   - [ systemctl, enable, --force, --now, --no-block, elasticsearch.service ]
-  - [ yum, -y, install, "https://github.com/codelibs/fess/releases/download/fess-12.6.0/fess-12.6.0.rpm" ]
+  - [ yum, -y, install, "https://github.com/codelibs/fess/releases/download/fess-13.0.2/fess-13.0.2.rpm" ]
   - [ /bin/bash, -c, "echo 'web.api.gsa=true' >> /etc/fess/system.properties" ]
   - [ chown, "fess:fess", /etc/fess/system.properties ]
   - [ sed, -i, -e, 's~^\(query\.additional\.api\.response\.fields=\).*$~\1UE,U,T,RK,S,LANG~', /etc/fess/fess_config.properties ]
