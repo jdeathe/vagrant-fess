@@ -4,6 +4,11 @@
 
 Summary of release changes.
 
+### 1.9.0 - 2019-09-07
+
+- Fess [13.1.1](https://github.com/codelibs/fess/releases/tag/fess-13.1.1)
+- Elasticsearch 7.1.1
+
 ### 1.8.0 - 2019-09-07
 
 - Fess [13.0.2](https://github.com/codelibs/fess/releases/tag/fess-13.0.2)
