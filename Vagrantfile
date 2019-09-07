@@ -26,7 +26,7 @@ $cloud_config_user_hash = Digest::SHA1.file(
 $cloudinit_uid = $cloud_config_user_hash[0,12]
 
 # Defaults for config options
-$image_version = "7.4.1"
+$image_version = "7.6.0"
 $linked_clone = false
 $share_home = false
 $vm_name = "fess.local"
