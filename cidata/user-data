@@ -95,7 +95,7 @@ yum_repos:
     type: "rpm-md"
 packages:
   - chrony
-  - elasticsearch-7.2.1
+  - elasticsearch-7.3.0
   - firewalld
   - haproxy
   - java-11-openjdk-headless
@@ -109,13 +109,13 @@ runcmd:
   - [ ln, -s, /etc/pki/tls/certs/localhost.crt, /etc/pki/tls/certs/sni/localhost.crt ]
   - [ systemctl, enable, --force, --now, --no-block, haproxy.service ]
   - [ /bin/bash, -c, "echo 'configsync.config_path: /var/lib/elasticsearch/config' >> /etc/elasticsearch/elasticsearch.yml" ]
-  - [ /usr/share/elasticsearch/bin/elasticsearch-plugin, install, -s, --batch, "org.codelibs:elasticsearch-analysis-fess:7.2.0" ]
-  - [ /usr/share/elasticsearch/bin/elasticsearch-plugin, install, -s, --batch, "org.codelibs:elasticsearch-analysis-extension:7.2.0" ]
-  - [ /usr/share/elasticsearch/bin/elasticsearch-plugin, install, -s, --batch, "org.codelibs:elasticsearch-configsync:7.2.0" ]
-  - [ /usr/share/elasticsearch/bin/elasticsearch-plugin, install, -s, --batch, "org.codelibs:elasticsearch-dataformat:7.2.0" ]
-  - [ /usr/share/elasticsearch/bin/elasticsearch-plugin, install, -s, --batch, "org.codelibs:elasticsearch-minhash:7.2.0" ]
+  - [ /usr/share/elasticsearch/bin/elasticsearch-plugin, install, -s, --batch, "org.codelibs:elasticsearch-analysis-fess:7.3.0" ]
+  - [ /usr/share/elasticsearch/bin/elasticsearch-plugin, install, -s, --batch, "org.codelibs:elasticsearch-analysis-extension:7.3.0" ]
+  - [ /usr/share/elasticsearch/bin/elasticsearch-plugin, install, -s, --batch, "org.codelibs:elasticsearch-configsync:7.3.0" ]
+  - [ /usr/share/elasticsearch/bin/elasticsearch-plugin, install, -s, --batch, "org.codelibs:elasticsearch-dataformat:7.3.0" ]
+  - [ /usr/share/elasticsearch/bin/elasticsearch-plugin, install, -s, --batch, "org.codelibs:elasticsearch-minhash:7.3.0" ]
   - [ systemctl, enable, --force, --now, --no-block, elasticsearch.service ]
-  - [ yum, -y, install, "https://github.com/codelibs/fess/releases/download/fess-13.2.1/fess-13.2.1.rpm" ]
+  - [ yum, -y, install, "https://github.com/codelibs/fess/releases/download/fess-13.3.0/fess-13.3.0.rpm" ]
   - [ /bin/bash, -c, "echo 'web.api.gsa=true' >> /etc/fess/system.properties" ]
   - [ chown, "fess:fess", /etc/fess/system.properties ]
   - [ sed, -i, -e, 's~^\(query\.additional\.api\.response\.fields=\).*$~\1UE,U,T,RK,S,LANG~', /etc/fess/fess_config.properties ]
